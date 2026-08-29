@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: clothing-ai-postgres
+    environment:
+      POSTGRES_DB: clothing_ai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: clothing-ai-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: clothing-ai-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  backend:
+    build: .
+    container_name: clothing-ai-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: clothing_ai
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: CHANGE_ME_super_secret_key_that_is_at_least_256_bits_long_for_HS256_algorithm_use_xxxx
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      CORS_ORIGINS: http://localhost:3000,http://localhost:4200
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

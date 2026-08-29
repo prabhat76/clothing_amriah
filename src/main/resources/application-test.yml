@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+  cache:
+    type: none
+
+app:
+  jwt:
+    secret: test_secret_key_for_jwt_token_testing_purposes_only_that_is_long_enough_to_pass_hs256
+  ai:
+    enabled: false
