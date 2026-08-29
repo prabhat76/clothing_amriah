@@ -81,7 +81,18 @@ public class ChatbotService {
     private List<ProductSummaryResponse> extractProductMentions(String message) {
         String lower = message.toLowerCase();
         var page = productRepository.search(lower, null, null, null, null, null, PageRequest.of(0, 5));
-        return page.getContent().stream().limit(3).toList();
+        return page.getContent().stream()
+                .limit(3)
+                .map(p -> new ProductSummaryResponse(
+                        p.getId(), p.getName(), p.getSlug(), p.getSku(), p.getShortDescription(),
+                        p.getMainImageUrl(), p.getPrice(), p.getCompareAtPrice(),
+                        p.getAverageRating(), p.getReviewCount(), p.isFeatured(), p.isNewArrival(),
+                        p.getCategory() != null ? p.getCategory().getId() : null,
+                        p.getCategory() != null ? p.getCategory().getName() : null,
+                        p.getBrand() != null ? p.getBrand().getId() : null,
+                        p.getBrand() != null ? p.getBrand().getName() : null,
+                        p.getPrice()))   // minVariantPrice — fall back to base price; no variant repo here
+                .toList();
     }
 
     private String topProductsText(int limit) {

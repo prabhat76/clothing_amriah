@@ -23,6 +23,12 @@ public class UserService {
     private final AddressRepository addressRepository;
     @Lazy private final AuthService authService;
 
+    /** Accessor used by controllers that need to delegate to AuthService. */
+    public AuthService authService() { return authService; }
+
+    /** Alias kept for compatibility with callers using the getX() naming convention. */
+    public AuthService getAuthService() { return authService; }
+
     @Transactional(readOnly = true)
     public User getOrThrow(UUID id) {
         return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User","id",id));
