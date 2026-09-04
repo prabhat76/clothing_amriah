@@ -26,7 +26,7 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
-    @Value("${app.public-url:http://localhost:8080}")
+    @Value("${app.upload.public-url:http://localhost:8080}")
     private String publicUrl;
 
     private static final String BEARER_AUTH = "BearerAuth";

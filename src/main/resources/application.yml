@@ -54,6 +54,7 @@ springdoc:
   default-produces-media-type: application/json
   show-actuator: false
   packages-to-scan: com.clothing.ai
+  server-url: ${PUBLIC_URL:http://localhost:8080}/api
 
 app:
   jwt:
