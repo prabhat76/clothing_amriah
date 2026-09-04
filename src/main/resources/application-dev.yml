@@ -35,3 +35,7 @@ spring:
           starttls:
             enable: false
 
+cloudinary:
+  cloud-name: dt6pfj9bb
+  api-key: 683253433293372
+  api-secret: XQ1igK4mUA0THcjmZfLbX0c1Fjk

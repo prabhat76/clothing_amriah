@@ -24,7 +24,7 @@ spring:
       spec: maximumSize=10000,expireAfterWrite=10m
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}
   compression:
     enabled: true
   forward-headers-strategy: framework
