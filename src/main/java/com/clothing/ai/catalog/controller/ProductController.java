@@ -4,6 +4,7 @@ import com.clothing.ai.catalog.dto.ProductDtos.*;
 import com.clothing.ai.catalog.service.ProductService;
 import com.clothing.ai.common.response.ApiResponse;
 import com.clothing.ai.common.response.PageResponse;
+import com.clothing.ai.common.util.ImageStorageService;
 import com.clothing.ai.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,9 +22,11 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -42,6 +45,7 @@ import java.util.UUID;
 public class ProductController {
 
     private final ProductService productService;
+    private final ImageStorageService imageStorageService;
 
     // ------------------------------------------------------------------ public reads
 
@@ -270,5 +274,45 @@ public class ProductController {
             @Valid @RequestBody VariantCreateRequest req) {
         return ApiResponse.success("Variant added",
                 productService.addVariant(id, req, SecurityUtils.currentUserId().toString()));
+    }
+
+    // ------------------------------------------------------------------ image upload
+
+    @Operation(
+            summary = "Upload a product image [ADMIN/STAFF]",
+            description = """
+                    Uploads a local image file to Cloudinary (or local disk as fallback) and
+                    attaches the URL to the product.
+
+                    - `setAsMain=true`  → sets as `mainImageUrl` (hero image)
+                    - `setAsMain=false` → appended to the product's additional images list
+
+                    Requires role `ADMIN` or `STAFF`.
+                    """)
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200", description = "Image uploaded and attached to product"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400", description = "Empty or invalid file"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404", description = "Product not found")
+    })
+    @SecurityRequirement(name = "BearerAuth")
+    @PostMapping(value = "/{id}/images/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ApiResponse<ProductDetailResponse> uploadImage(
+            @Parameter(description = "Product UUID") @PathVariable UUID id,
+            @Parameter(description = "Image file (jpg / png / webp)")
+            @RequestPart("file") MultipartFile file,
+            @Parameter(description = "Set as the product's main hero image?", example = "false")
+            @RequestParam(defaultValue = "false") boolean setAsMain) {
+        try {
+            String imageUrl = imageStorageService.save(file, "products");
+            return ApiResponse.success("Image uploaded",
+                    productService.addProductImage(id, imageUrl, setAsMain,
+                            SecurityUtils.currentUserId().toString()));
+        } catch (Exception e) {
+            return ApiResponse.error("UPLOAD_FAILED", e.getMessage());
+        }
     }
 }

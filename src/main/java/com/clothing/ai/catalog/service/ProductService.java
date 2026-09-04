@@ -208,6 +208,26 @@ public class ProductService {
         return productMapper.toDetail(p);
     }
 
+    /**
+     * Attach an already-uploaded image URL to a product.
+     * If {@code setAsMain} is true, replaces {@code mainImageUrl}; otherwise appends to {@code imageUrls}.
+     */
+    @Transactional
+    public ProductDetailResponse addProductImage(UUID productId, String imageUrl, boolean setAsMain, String actorId) {
+        Product p = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
+        if (setAsMain) {
+            p.setMainImageUrl(imageUrl);
+        } else {
+            Set<String> images = p.getImageUrls() != null ? new HashSet<>(p.getImageUrls()) : new HashSet<>();
+            images.add(imageUrl);
+            p.setImageUrls(images);
+        }
+        auditService.record(actorId, "PRODUCT_IMAGE_ADD", "Product", productId.toString(),
+                "Added image " + imageUrl);
+        return productMapper.toDetail(p);
+    }
+
     @Transactional
     public void deleteProduct(UUID id, String actorId) {
         Product p = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product","id",id));

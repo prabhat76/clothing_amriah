@@ -141,6 +141,8 @@ public class OpenApiConfig {
                         "Product category tree management"),
                 tag("Brands",
                         "Brand management"),
+                tag("Banners",
+                        "Homepage hero carousel banners: upload, manage, reorder (public GET, admin writes)"),
                 tag("Cart",
                         "Shopping cart: add, update, remove, clear items"),
                 tag("Wishlist",
