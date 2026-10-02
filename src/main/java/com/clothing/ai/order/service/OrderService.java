@@ -44,7 +44,7 @@ public class OrderService {
     private final PaymentService paymentService;
     private final NotificationService notificationService;
 
-    @Transactional
+    @Transactional(noRollbackFor = {BadRequestException.class, ForbiddenException.class})
     public OrderResponse checkout(UUID userId, CheckoutRequest req) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User","id",userId));
         Address shipping = addressRepository.findById(req.shippingAddressId())
@@ -55,10 +55,16 @@ public class OrderService {
         CartResponse cart = cartService.getOrCreateCart(userId);
         if (cart.items().isEmpty()) throw new BadRequestException("Cart is empty");
 
-        // Validate and reserve stock
+        // Resolve all variants first — throw BadRequestException for missing/invalid IDs
+        // so the transaction doesn't get poisoned by NoSuchElementException
+        java.util.Map<UUID, ProductVariant> variantMap = new java.util.LinkedHashMap<>();
         for (var i : cart.items()) {
-            ProductVariant v = variantRepository.findById(i.variantId()).orElseThrow();
-            if (v.getStockQuantity() < i.quantity()) throw new BadRequestException("Insufficient stock for SKU " + v.getSku());
+            ProductVariant v = variantRepository.findById(i.variantId())
+                    .orElseThrow(() -> new BadRequestException(
+                            "Variant not found: " + i.variantId() + " — cart may contain stale items, please refresh"));
+            if (v.getStockQuantity() < i.quantity())
+                throw new BadRequestException("Insufficient stock for SKU " + v.getSku());
+            variantMap.put(i.variantId(), v);
         }
 
         Order order = Order.builder()
@@ -71,7 +77,7 @@ public class OrderService {
                 .build();
 
         for (var ci : cart.items()) {
-            ProductVariant v = variantRepository.findById(ci.variantId()).orElseThrow();
+            ProductVariant v = variantMap.get(ci.variantId());
             OrderItem item = OrderItem.builder()
                     .order(order).variant(v)
                     .productName(ci.productName()).size(ci.size()).color(ci.color()).sku(ci.sku())
@@ -84,7 +90,7 @@ public class OrderService {
 
         order = orderRepository.save(order);
 
-        // Initiate payment — capture the token so the frontend can complete the flow
+        // Payment runs in REQUIRES_NEW — its failure never marks this transaction rollback-only
         String paymentToken = null;
         try {
             paymentToken = paymentService.createPaymentIntent(order, req.paymentMethod());
