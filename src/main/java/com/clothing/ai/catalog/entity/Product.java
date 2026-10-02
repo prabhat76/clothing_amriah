@@ -108,8 +108,8 @@ public class Product extends BaseEntity {
     @Builder.Default
     private List<ProductVariant> variants = new ArrayList<>();
 
-    // Generated column — Hibernate must never write to it
-    @Column(name = "fts_doc", insertable = false, updatable = false, columnDefinition = "tsvector")
+    // Generated tsvector column managed entirely by PostgreSQL — Hibernate must never read or write it
+    @Transient
     private String ftsDoc;
 
     public enum ProductStatus { DRAFT, ACTIVE, OUT_OF_STOCK, DISCONTINUED, ARCHIVED }
