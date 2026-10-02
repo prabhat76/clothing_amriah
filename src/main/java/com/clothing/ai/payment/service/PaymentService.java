@@ -380,9 +380,16 @@ public class PaymentService {
     // ──────────────────────────────────────────────────────────────────────────
 
     private PayPalHttpClient buildPayPalClient(AppProperties.Payment.Paypal cfg) {
-        PayPalEnvironment env = "live".equalsIgnoreCase(cfg.getMode())
-                ? new PayPalEnvironment.Live(cfg.getClientId(), cfg.getClientSecret())
-                : new PayPalEnvironment.Sandbox(cfg.getClientId(), cfg.getClientSecret());
+        String clientId = cfg.getClientId();
+        String mode = cfg.getMode();
+        // Log first/last 6 chars so we can verify the right key is loaded without exposing it
+        String maskedId = clientId != null && clientId.length() > 12
+                ? clientId.substring(0, 6) + "..." + clientId.substring(clientId.length() - 6)
+                : "(short or null)";
+        log.info("Building PayPal client — mode={}, clientId={}", mode, maskedId);
+        PayPalEnvironment env = "live".equalsIgnoreCase(mode)
+                ? new PayPalEnvironment.Live(clientId, cfg.getClientSecret())
+                : new PayPalEnvironment.Sandbox(clientId, cfg.getClientSecret());
         return new PayPalHttpClient(env);
     }
 }
