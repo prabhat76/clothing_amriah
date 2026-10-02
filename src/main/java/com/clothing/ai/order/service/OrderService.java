@@ -97,7 +97,16 @@ public class OrderService {
             order.setPaymentStatus(PaymentStatus.AUTHORIZED);
             orderRepository.save(order);
         } catch (Exception e) {
-            log.warn("Payment init failed: {}", e.getMessage());
+            String method = req.paymentMethod() != null ? req.paymentMethod().toUpperCase() : "";
+            // COD/offline methods: silently proceed without a token
+            // Online methods (PAYPAL, STRIPE): propagate the failure — don't place the order silently
+            if (method.equals("COD") || method.equals("APPLE_PAY") || method.equals("GOOGLE_PAY")) {
+                log.warn("Payment init failed for {} (continuing): {}", method, e.getMessage());
+            } else {
+                // Roll back stock and order — re-throw as 400 so frontend shows the error
+                log.warn("Payment init failed for {} — aborting checkout: {}", method, e.getMessage());
+                throw new BadRequestException("Payment failed: " + e.getMessage());
+            }
         }
 
         cartService.clearCart(userId);

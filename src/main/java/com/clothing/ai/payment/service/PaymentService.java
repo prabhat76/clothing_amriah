@@ -99,13 +99,7 @@ public class PaymentService {
     public String createPayPalOrder(Order order, PaymentMethod pm) {
         AppProperties.Payment.Paypal cfg = props.getPayment().getPaypal();
         if (cfg.getClientId() == null || cfg.getClientId().isBlank()) {
-            log.warn("PayPal not configured — using simulated order ID");
-            String simId = "SIMULATED_PAYPAL_" + order.getOrderNumber();
-            paymentRepository.save(Payment.builder()
-                    .order(order).transactionId(simId).method(pm)
-                    .status(Payment.PaymentStatus.PENDING)
-                    .amount(order.getTotal()).currency(order.getCurrency()).build());
-            return simId;
+            throw new BadRequestException("PayPal is not configured on this server. Please use a different payment method.");
         }
 
         try {
