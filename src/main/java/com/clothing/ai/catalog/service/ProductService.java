@@ -132,14 +132,14 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDetailResponse getBySlug(String slug) {
-        Product p = productRepository.findBySlug(slug)
+        Product p = productRepository.findBySlugWithRelations(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Product","slug",slug));
         return productMapper.toDetail(p);
     }
 
     @Transactional(readOnly = true)
     public ProductDetailResponse getById(UUID id) {
-        Product p = productRepository.findById(id)
+        Product p = productRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product","id",id));
         return productMapper.toDetail(p);
     }
