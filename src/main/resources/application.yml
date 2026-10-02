@@ -62,7 +62,7 @@ app:
     access-token-expiration: 3600000      # 1 hour
     refresh-token-expiration: 2592000000  # 30 days
   cors:
-    allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173}
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173,https://astrimi.com,https://www.astrimi.com,https://amriah-frontend-six.vercel.app}
   ai:
     openai:
       api-key: ${OPENAI_API_KEY:}
