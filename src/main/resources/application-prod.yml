@@ -56,7 +56,7 @@ app:
     access-token-expiration: ${JWT_ACCESS_EXPIRY:86400000}
     refresh-token-expiration: ${JWT_REFRESH_EXPIRY:604800000}
   cors:
-    allowed-origins: ${CORS_ORIGINS:https://amriah-frontend-six.vercel.app}
+    allowed-origins: ${CORS_ORIGINS:https://astrimi.com,https://www.astrimi.com,https://amriah-frontend-six.vercel.app}
   ai:
     openai:
       api-key: ${OPENAI_API_KEY:}
