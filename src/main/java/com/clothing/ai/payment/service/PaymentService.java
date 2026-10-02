@@ -22,6 +22,7 @@ import com.stripe.param.PaymentIntentCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -47,7 +48,7 @@ public class PaymentService {
      * For PayPal:  returns the PayPal Order ID (client calls PayPal SDK with it).
      * For COD:     returns "PENDING_<orderNumber>".
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String createPaymentIntent(Order order, String method) {
         PaymentMethod pm;
         try {
@@ -94,7 +95,7 @@ public class PaymentService {
      * payment sheet, then calls POST /payments/paypal/capture/{paypalOrderId}
      * after the user approves.
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String createPayPalOrder(Order order, PaymentMethod pm) {
         AppProperties.Payment.Paypal cfg = props.getPayment().getPaypal();
         if (cfg.getClientId() == null || cfg.getClientId().isBlank()) {
