@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/clothingai}
-    username: ${DATABASE_USERNAME:clothingai}
-    password: ${DATABASE_PASSWORD:}
+    url: ${DATABASE_URL:jdbc:postgresql://ep-shiny-mountain-axrdhl1m-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
+    username: ${DATABASE_USERNAME:neondb_owner}
+    password: ${DATABASE_PASSWORD:npg_u2lkfW8LpdOy}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
