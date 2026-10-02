@@ -1,3 +1,5 @@
+package com.clothing.ai.security;
+
 import com.clothing.ai.config.AppProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
