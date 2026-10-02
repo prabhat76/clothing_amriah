@@ -81,7 +81,9 @@ public class OrderDtos {
             Instant createdAt,
             Instant shippedAt,
             Instant deliveredAt,
-            Instant cancelledAt) {}
+            Instant cancelledAt,
+            @Schema(description = "Stripe client_secret OR PayPal Order ID — null for COD/status queries")
+            String paymentToken) {}
 
     @Schema(description = "Lightweight order tracking response")
     public record OrderTrackingResponse(

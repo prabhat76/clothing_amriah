@@ -44,6 +44,7 @@ public class SecurityConfig {
                                  "/payments/stripe/webhook",
                                  "/payments/paypal/webhook").permitAll()
                 .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/reviews/**",
+                                                       "/brands/**",
                                                        "/ai/recommendations/**", "/ai/trending",
                                                        "/banners").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")

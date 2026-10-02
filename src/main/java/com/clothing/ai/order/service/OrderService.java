@@ -84,28 +84,30 @@ public class OrderService {
 
         order = orderRepository.save(order);
 
-        // Initiate payment
+        // Initiate payment — capture the token so the frontend can complete the flow
+        String paymentToken = null;
         try {
-            String paymentIntent = paymentService.createPaymentIntent(order, req.paymentMethod());
+            paymentToken = paymentService.createPaymentIntent(order, req.paymentMethod());
             order.setPaymentStatus(PaymentStatus.AUTHORIZED);
+            orderRepository.save(order);
         } catch (Exception e) {
             log.warn("Payment init failed: {}", e.getMessage());
         }
 
         cartService.clearCart(userId);
         notificationService.sendOrderConfirmation(order);
-        return toResponse(order);
+        return toResponse(order, paymentToken);
     }
 
     @Transactional(readOnly = true)
     public PageResponse<OrderResponse> myOrders(UUID userId, int page, int size) {
-        return PageResponse.from(orderRepository.findByUserId(userId, PageRequest.of(page, size)), this::toResponse);
+        return PageResponse.from(orderRepository.findByUserId(userId, PageRequest.of(page, size)), o -> toResponse(o, null));
     }
 
     @Transactional(readOnly = true)
     public OrderResponse getByNumber(String orderNumber) {
         Order o = orderRepository.findByOrderNumber(orderNumber).orElseThrow(() -> new ResourceNotFoundException("Order","number",orderNumber));
-        return toResponse(o);
+        return toResponse(o, null);
     }
 
     @Transactional
@@ -121,7 +123,7 @@ public class OrderService {
             ProductVariant v = item.getVariant();
             v.setStockQuantity(v.getStockQuantity() + item.getQuantity());
         }
-        return toResponse(o);
+        return toResponse(o, null);
     }
 
     @Transactional
@@ -142,18 +144,18 @@ public class OrderService {
             o.setCancelledAt(Instant.now());
         }
         notificationService.sendOrderStatusUpdate(o);
-        return toResponse(o);
+        return toResponse(o, null);
     }
 
     @Transactional(readOnly = true)
     public List<OrderResponse> findByStatus(OrderStatus status) {
-        return orderRepository.findByStatus(status, PageRequest.of(0, 100)).map(this::toResponse).getContent();
+        return orderRepository.findByStatus(status, PageRequest.of(0, 100)).map(o -> toResponse(o, null)).getContent();
     }
 
     @Transactional(readOnly = true)
     public PageResponse<OrderResponse> findByStatusPaged(OrderStatus status, int page, int size) {
         return PageResponse.from(
-                orderRepository.findByStatus(status, PageRequest.of(page, size)), this::toResponse);
+                orderRepository.findByStatus(status, PageRequest.of(page, size)), o -> toResponse(o, null));
     }
 
     @Transactional(readOnly = true)
@@ -172,7 +174,7 @@ public class OrderService {
         return "CL-" + ts + "-" + (int)(Math.random() * 9000 + 1000);
     }
 
-    public OrderResponse toResponse(Order o) {
+    public OrderResponse toResponse(Order o, String paymentToken) {
         List<OrderItemResponse> items = o.getItems().stream().map(i -> new OrderItemResponse(
                 i.getId(), i.getVariant().getId(), i.getVariant().getProduct().getId(),
                 i.getProductName(), i.getSize(), i.getColor(), i.getSku(), i.getImageUrl(),
@@ -184,6 +186,6 @@ public class OrderService {
         return new OrderResponse(o.getId(), o.getOrderNumber(), o.getStatus().name(), o.getPaymentStatus().name(),
                 items, addr, o.getSubtotal(), o.getDiscount(), o.getShippingCost(), o.getTax(),
                 o.getTotal(), o.getCurrency(), o.getTrackingNumber(), o.getShippingCarrier(),
-                o.getCreatedAt(), o.getShippedAt(), o.getDeliveredAt(), o.getCancelledAt());
+                o.getCreatedAt(), o.getShippedAt(), o.getDeliveredAt(), o.getCancelledAt(), paymentToken);
     }
 }

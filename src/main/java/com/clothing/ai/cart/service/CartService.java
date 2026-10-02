@@ -88,7 +88,7 @@ public class CartService {
     public void clearCart(UUID userId) {
         Cart cart = cartRepository.findByUserId(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","user",userId));
         cart.getItems().clear();
-        cartItemRepository.flush();
+        cartRepository.save(cart);  // orphanRemoval will delete the child rows
     }
 
     public CartResponse toResponse(Cart cart) {

@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://ep-shiny-mountain-axrdhl1m-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-    username: neondb_owner
-    password: npg_u2lkfW8LpdOy
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/clothingai}
+    username: ${DATABASE_USERNAME:clothingai}
+    password: ${DATABASE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -36,6 +36,6 @@ spring:
             enable: false
 
 cloudinary:
-  cloud-name: dt6pfj9bb
-  api-key: 683253433293372
-  api-secret: XQ1igK4mUA0THcjmZfLbX0c1Fjk
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
