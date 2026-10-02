@@ -12,7 +12,7 @@ import java.util.UUID;
  */
 public class PaymentDtos {
 
-    @Schema(description = "Create a Stripe PaymentIntent for an existing order")
+    @Schema(description = "Create a payment intent / PayPal order for an existing order")
     public record CreatePaymentIntentRequest(
             @Schema(description = "UUID of the order to pay for", requiredMode = Schema.RequiredMode.REQUIRED)
             @NotNull UUID orderId,
@@ -22,12 +22,13 @@ public class PaymentDtos {
                     requiredMode = Schema.RequiredMode.REQUIRED)
             @NotBlank String method) {}
 
-    @Schema(description = "PaymentIntent creation response")
+    @Schema(description = "Payment intent / PayPal order creation response")
     public record PaymentIntentResponse(
-            @Schema(description = "Internal transaction ID or Stripe PaymentIntent ID")
+            @Schema(description = "Internal transaction ID, Stripe PaymentIntent ID, or PayPal Order ID")
             String transactionId,
 
-            @Schema(description = "Stripe client_secret — pass to Stripe.js to complete card payment. Null for COD/PayPal.")
+            @Schema(description = "Stripe client_secret — pass to Stripe.js to complete card payment. " +
+                                   "For PayPal, pass transactionId to the PayPal JS SDK. Null for COD.")
             String clientSecret,
 
             @Schema(description = "Payment status", example = "AUTHORIZED")
@@ -39,6 +40,20 @@ public class PaymentDtos {
             @Schema(description = "3-letter ISO currency code", example = "USD")
             String currency) {}
 
-    @Schema(description = "Raw Stripe webhook event — Stripe sends this automatically, do not call manually")
+    @Schema(description = "PayPal order capture response")
+    public record PaymentCaptureResponse(
+            @Schema(description = "PayPal Order ID")
+            String paypalOrderId,
+
+            @Schema(description = "PayPal capture status — COMPLETED means funds secured")
+            String status,
+
+            @Schema(description = "Amount captured")
+            BigDecimal amount,
+
+            @Schema(description = "Currency")
+            String currency) {}
+
+    @Schema(description = "Raw Stripe webhook event — Stripe sends this automatically")
     public record StripeWebhookRequest(String id, String type, Map<String, Object> data) {}
 }

@@ -66,12 +66,22 @@ public class AppProperties {
     @Data
     public static class Payment {
         private Stripe stripe = new Stripe();
+        private Paypal paypal = new Paypal();
 
         @Data
         public static class Stripe {
             private String secretKey;
             private String webhookSecret;
             private String currency;
+        }
+
+        @Data
+        public static class Paypal {
+            private String clientId;
+            private String clientSecret;
+            /** sandbox or live */
+            private String mode = "sandbox";
+            private String webhookId;
         }
     }
 }

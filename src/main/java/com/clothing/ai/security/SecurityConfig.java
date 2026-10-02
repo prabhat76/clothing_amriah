@@ -40,7 +40,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/auth/**", "/actuator/health/**", "/actuator/info",
                                  "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                                 "/uploads/**").permitAll()
+                                 "/uploads/**",
+                                 "/payments/stripe/webhook",
+                                 "/payments/paypal/webhook").permitAll()
                 .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/reviews/**",
                                                        "/ai/recommendations/**", "/ai/trending",
                                                        "/banners").permitAll()

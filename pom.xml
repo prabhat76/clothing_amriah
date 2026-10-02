@@ -23,6 +23,7 @@
         <lombok.version>1.18.38</lombok.version>
         <stripe.version>24.21.0</stripe.version>
         <springdoc.version>2.6.0</springdoc.version>
+        <paypal.version>2.0.0</paypal.version>
     </properties>
 
     <dependencies>
@@ -111,6 +112,18 @@
             <groupId>com.stripe</groupId>
             <artifactId>stripe-java</artifactId>
             <version>${stripe.version}</version>
+        </dependency>
+        <!-- PayPal Checkout SDK -->
+        <dependency>
+            <groupId>com.paypal.sdk</groupId>
+            <artifactId>checkout-sdk</artifactId>
+            <version>${paypal.version}</version>
+        </dependency>
+        <!-- PayPal REST API SDK (webhook signature verification) -->
+        <dependency>
+            <groupId>com.paypal.sdk</groupId>
+            <artifactId>rest-api-sdk</artifactId>
+            <version>1.14.0</version>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
