@@ -16,6 +16,12 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     Optional<Product> findBySlug(String slug);
 
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.id = :id")
+    Optional<Product> findByIdWithRelations(@Param("id") UUID id);
+
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.slug = :slug")
+    Optional<Product> findBySlugWithRelations(@Param("slug") String slug);
+
     Page<Product> findByActiveTrueAndStatus(ProductStatus status, Pageable pageable);
 
     Page<Product> findByActiveTrue(Pageable pageable);
