@@ -101,7 +101,14 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public PageResponse<OrderResponse> myOrders(UUID userId, int page, int size) {
-        return PageResponse.from(orderRepository.findByUserId(userId, PageRequest.of(page, size)), o -> toResponse(o, null));
+        List<Order> all = orderRepository.findByUserIdFetched(userId);
+        int total = all.size();
+        int totalPages = size > 0 ? (int) Math.ceil((double) total / size) : 1;
+        int from = Math.min(page * size, total);
+        int to = Math.min(from + size, total);
+        List<OrderResponse> content = all.subList(from, to).stream()
+                .map(o -> toResponse(o, null)).toList();
+        return new PageResponse<>(content, page, size, total, totalPages, page == 0, to >= total);
     }
 
     @Transactional(readOnly = true)
@@ -149,7 +156,8 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<OrderResponse> findByStatus(OrderStatus status) {
-        return orderRepository.findByStatus(status, PageRequest.of(0, 100)).map(o -> toResponse(o, null)).getContent();
+        return orderRepository.findByStatusFetched(status).stream()
+                .map(o -> toResponse(o, null)).toList();
     }
 
     @Transactional(readOnly = true)

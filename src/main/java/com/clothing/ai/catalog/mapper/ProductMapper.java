@@ -33,8 +33,25 @@ public class ProductMapper {
 
     // ------------------------------------------------------------------ summary
 
+    /**
+     * Load variants from the already-fetched in-memory collection when present
+     * (set by a JOIN FETCH query), falling back to a repo hit only when the
+     * collection is empty/uninitialized. This avoids an N+1 on product listing pages.
+     */
+    private List<ProductVariant> variantsFor(Product p) {
+        // Hibernate initialises the Set; if it has items we already paid for them
+        // via a JOIN FETCH. Only query when there are none loaded.
+        try {
+            var loaded = p.getVariants();
+            if (loaded != null && !loaded.isEmpty()) return loaded.stream().toList();
+        } catch (Exception ignored) {
+            // proxy not yet initialised — fall through to repo
+        }
+        return variantRepository.findByProductId(p.getId());
+    }
+
     public ProductSummaryResponse toSummary(Product p) {
-        BigDecimal minPrice = variantRepository.findByProductId(p.getId()).stream()
+        BigDecimal minPrice = variantsFor(p).stream()
                 .map(ProductVariant::getEffectivePrice)
                 .min(Comparator.naturalOrder())
                 .orElse(p.getPrice());
@@ -62,7 +79,7 @@ public class ProductMapper {
     // ------------------------------------------------------------------ detail
 
     public ProductDetailResponse toDetail(Product p) {
-        List<ProductVariant> variants = variantRepository.findByProductId(p.getId());
+        List<ProductVariant> variants = variantsFor(p);
         List<String> sizes = variants.stream()
                 .map(ProductVariant::getSize).filter(Objects::nonNull).distinct().sorted().toList();
         List<String> colors = variants.stream()

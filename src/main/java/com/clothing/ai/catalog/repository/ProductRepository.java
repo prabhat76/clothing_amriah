@@ -16,10 +16,10 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     Optional<Product> findBySlug(String slug);
 
-    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.id = :id")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand LEFT JOIN FETCH p.variants WHERE p.id = :id")
     Optional<Product> findByIdWithRelations(@Param("id") UUID id);
 
-    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.slug = :slug")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand LEFT JOIN FETCH p.variants WHERE p.slug = :slug")
     Optional<Product> findBySlugWithRelations(@Param("slug") String slug);
 
     Page<Product> findByActiveTrueAndStatus(ProductStatus status, Pageable pageable);
@@ -62,4 +62,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     long countByCategoryIdAndActiveTrue(UUID categoryId);
 
     long countByBrandIdAndActiveTrue(UUID brandId);
+
+    long countByActiveTrue();
 }
