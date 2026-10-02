@@ -4,7 +4,9 @@ import com.clothing.ai.common.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -101,6 +103,14 @@ public class Product extends BaseEntity {
 
     @Column(name = "weight_grams")
     private Integer weightGrams;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<ProductVariant> variants = new ArrayList<>();
+
+    // Generated column — Hibernate must never write to it
+    @Column(name = "fts_doc", insertable = false, updatable = false, columnDefinition = "tsvector")
+    private String ftsDoc;
 
     public enum ProductStatus { DRAFT, ACTIVE, OUT_OF_STOCK, DISCONTINUED, ARCHIVED }
 }

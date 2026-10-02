@@ -34,7 +34,7 @@ public class AdminDashboardService {
         map.put("deliveredOrders", orderRepository.countByStatus(OrderStatus.DELIVERED));
         map.put("cancelledOrders", orderRepository.countByStatus(OrderStatus.CANCELLED));
         map.put("totalProducts", productRepository.count());
-        map.put("activeProducts", productRepository.findAll().stream().filter(p -> p.isActive()).count());
+        map.put("activeProducts", productRepository.countByActiveTrue());
         map.put("totalUsers", userRepository.count());
         map.put("generatedAt", Instant.now());
         return map;
@@ -53,9 +53,7 @@ public class AdminDashboardService {
     @Transactional(readOnly = true)
     public Map<String, Object> topProducts(int limit, int days) {
         Map<String, Object> result = new HashMap<>();
-        var products = productRepository.findAll().stream()
-                .filter(p -> p.isActive())
-                .sorted((a, b) -> b.getSalesCount() - a.getSalesCount())
+        var products = productRepository.findTop12ByActiveTrueOrderBySalesCountDesc().stream()
                 .limit(limit)
                 .map(p -> Map.of(
                         "id", p.getId(), "name", p.getName(),
