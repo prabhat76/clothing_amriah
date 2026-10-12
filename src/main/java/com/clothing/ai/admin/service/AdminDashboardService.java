@@ -1,12 +1,14 @@
 package com.clothing.ai.admin.service;
 
 import com.clothing.ai.catalog.repository.ProductRepository;
+import com.clothing.ai.catalog.repository.ProductVariantRepository;
 import com.clothing.ai.order.entity.Order.OrderStatus;
 import com.clothing.ai.order.repository.OrderRepository;
 import com.clothing.ai.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -19,34 +21,39 @@ public class AdminDashboardService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final ProductVariantRepository variantRepository;
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public Map<String, Object> summary() {
-        Instant last7d = Instant.now().minus(7, ChronoUnit.DAYS);
+        Instant startOfToday = Instant.now().truncatedTo(ChronoUnit.DAYS);
         Instant last30d = Instant.now().minus(30, ChronoUnit.DAYS);
 
+        BigDecimal totalRevenue = orderRepository.totalRevenue();
+        BigDecimal revenueToday = orderRepository.revenueFrom(startOfToday);
+        BigDecimal aov30d = orderRepository.avgOrderValueFrom(last30d);
+
         Map<String, Object> map = new HashMap<>();
-        map.put("totalOrders", orderRepository.count());
-        map.put("pendingOrders", orderRepository.countByStatus(OrderStatus.PENDING));
-        map.put("processingOrders", orderRepository.countByStatus(OrderStatus.PROCESSING));
-        map.put("shippedOrders", orderRepository.countByStatus(OrderStatus.SHIPPED));
-        map.put("deliveredOrders", orderRepository.countByStatus(OrderStatus.DELIVERED));
-        map.put("cancelledOrders", orderRepository.countByStatus(OrderStatus.CANCELLED));
-        map.put("totalProducts", productRepository.count());
-        map.put("activeProducts", productRepository.countByActiveTrue());
-        map.put("totalUsers", userRepository.count());
-        map.put("generatedAt", Instant.now());
+        map.put("totalRevenue", totalRevenue != null ? totalRevenue.doubleValue() : 0.0);
+        map.put("revenueToday", revenueToday != null ? revenueToday.doubleValue() : 0.0);
+        map.put("ordersTotal", orderRepository.count());
+        map.put("ordersPending", orderRepository.countByStatus(OrderStatus.PENDING));
+        map.put("ordersShipped", orderRepository.countByStatus(OrderStatus.SHIPPED));
+        map.put("totalCustomers", userRepository.count());
+        map.put("newCustomersToday", userRepository.countUsersFrom(startOfToday));
+        map.put("totalProducts", productRepository.countByActiveTrue());
+        map.put("lowStockProducts", variantRepository.countLowStockProducts());
+        map.put("averageOrderValue", aov30d != null ? aov30d.doubleValue() : 0.0);
         return map;
     }
 
     @Transactional(readOnly = true)
     public Map<String, Object> revenueChart(int days) {
-        // Returns daily buckets — detailed SQL aggregation left for production; placeholder here
+        Instant from = Instant.now().minus(days, ChronoUnit.DAYS);
         Map<String, Object> result = new HashMap<>();
         result.put("days", days);
-        result.put("series", java.util.List.of());
-        result.put("note", "Connect orderRepository.dailyRevenue(from, to) for real data");
+        result.put("totalRevenue", orderRepository.revenueFrom(from));
+        result.put("totalOrders", orderRepository.countOrdersFrom(from));
         return result;
     }
 

@@ -53,5 +53,17 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     Page<Order> findByStatus(OrderStatus status, Pageable pageable);
 
     long countByStatus(OrderStatus status);
+
+    @Query("SELECT COALESCE(SUM(o.total), 0) FROM Order o WHERE o.status IN ('DELIVERED', 'SHIPPED', 'CONFIRMED', 'PROCESSING')")
+    java.math.BigDecimal totalRevenue();
+
+    @Query("SELECT COALESCE(SUM(o.total), 0) FROM Order o WHERE o.status IN ('DELIVERED', 'SHIPPED', 'CONFIRMED', 'PROCESSING') AND o.createdAt >= :from")
+    java.math.BigDecimal revenueFrom(@Param("from") java.time.Instant from);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.createdAt >= :from")
+    long countOrdersFrom(@Param("from") java.time.Instant from);
+
+    @Query("SELECT COALESCE(AVG(o.total), 0) FROM Order o WHERE o.createdAt >= :from")
+    java.math.BigDecimal avgOrderValueFrom(@Param("from") java.time.Instant from);
 }
 
