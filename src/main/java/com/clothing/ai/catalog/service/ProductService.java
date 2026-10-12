@@ -183,13 +183,13 @@ public class ProductService {
         }
         auditService.record(actorId, "PRODUCT_CREATE", "Product", p.getId().toString(),
                 "Created product " + p.getName());
-        return productMapper.toDetail(p);
+        return productMapper.toDetail(productRepository.findByIdWithRelations(p.getId()).orElse(p));
     }
 
     @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public ProductDetailResponse updateProduct(UUID id, ProductUpdateRequest req, String actorId) {
-        Product p = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product","id",id));
+        Product p = productRepository.findByIdWithRelations(id).orElseThrow(() -> new ResourceNotFoundException("Product","id",id));
         if (req.name() != null) p.setName(req.name());
         if (req.description() != null) p.setDescription(req.description());
         if (req.shortDescription() != null) p.setShortDescription(req.shortDescription());
@@ -217,7 +217,7 @@ public class ProductService {
      */
     @Transactional
     public ProductDetailResponse addProductImage(UUID productId, String imageUrl, boolean setAsMain, String actorId) {
-        Product p = productRepository.findById(productId)
+        Product p = productRepository.findByIdWithRelations(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
         if (setAsMain) {
             p.setMainImageUrl(imageUrl);
@@ -238,6 +238,18 @@ public class ProductService {
         p.setActive(false);
         p.setStatus(ProductStatus.ARCHIVED);
         auditService.record(actorId, "PRODUCT_DELETE", "Product", id.toString(), "Archived product");
+    }
+
+    @Transactional
+    public List<ProductDetailResponse> addProductImages(UUID productId, List<String> imageUrls, String actorId) {
+        Product p = productRepository.findByIdWithRelations(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
+        Set<String> images = p.getImageUrls() != null ? new HashSet<>(p.getImageUrls()) : new HashSet<>();
+        images.addAll(imageUrls);
+        p.setImageUrls(images);
+        auditService.record(actorId, "PRODUCT_IMAGES_ADD", "Product", productId.toString(),
+                "Added " + imageUrls.size() + " images");
+        return List.of(productMapper.toDetail(p));
     }
 
     @Transactional

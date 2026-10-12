@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -311,6 +312,34 @@ public class ProductController {
             return ApiResponse.success("Image uploaded",
                     productService.addProductImage(id, imageUrl, setAsMain,
                             SecurityUtils.currentUserId().toString()));
+        } catch (Exception e) {
+            return ApiResponse.error("UPLOAD_FAILED", e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Bulk upload product images [ADMIN/STAFF]")
+    @SecurityRequirement(name = "BearerAuth")
+    @PostMapping(value = "/{id}/images/bulk-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ApiResponse<ProductDetailResponse> bulkUploadImages(
+            @PathVariable UUID id,
+            @RequestPart("files") List<MultipartFile> files,
+            @RequestParam(defaultValue = "false") boolean setFirstAsMain) {
+        try {
+            List<String> urls = new java.util.ArrayList<>();
+            for (int i = 0; i < files.size(); i++) {
+                String url = imageStorageService.save(files.get(i), "products");
+                if (i == 0 && setFirstAsMain) {
+                    productService.addProductImage(id, url, true, SecurityUtils.currentUserId().toString());
+                } else {
+                    urls.add(url);
+                }
+            }
+            if (!urls.isEmpty()) {
+                productService.addProductImages(id, urls, SecurityUtils.currentUserId().toString());
+            }
+            return ApiResponse.success("Images uploaded",
+                    productService.getById(id));
         } catch (Exception e) {
             return ApiResponse.error("UPLOAD_FAILED", e.getMessage());
         }
