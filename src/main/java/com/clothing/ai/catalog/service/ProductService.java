@@ -11,6 +11,7 @@ import com.clothing.ai.common.exception.*;
 import com.clothing.ai.common.util.SlugUtil;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -153,6 +154,7 @@ public class ProductService {
                 .map(productMapper::toSummary);
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public ProductDetailResponse createProduct(ProductCreateRequest req, String actorId) {
         Product p = Product.builder()
@@ -184,6 +186,7 @@ public class ProductService {
         return productMapper.toDetail(p);
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public ProductDetailResponse updateProduct(UUID id, ProductUpdateRequest req, String actorId) {
         Product p = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product","id",id));
@@ -228,6 +231,7 @@ public class ProductService {
         return productMapper.toDetail(p);
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public void deleteProduct(UUID id, String actorId) {
         Product p = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product","id",id));
