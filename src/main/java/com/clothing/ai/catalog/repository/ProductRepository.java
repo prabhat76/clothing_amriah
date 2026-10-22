@@ -40,12 +40,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     Page<Product> findByActiveTrueAndStatus(ProductStatus status, Pageable pageable);
 
-    @Query("""
-        SELECT DISTINCT p FROM Product p
-        LEFT JOIN FETCH p.category
-        LEFT JOIN FETCH p.brand
-        WHERE p.active = true
-        """)
+    @Query("SELECT p FROM Product p WHERE p.active = true")
     List<Product> findAllActiveWithImages();
 
     Page<Product> findByActiveTrue(Pageable pageable);

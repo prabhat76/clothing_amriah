@@ -133,7 +133,7 @@ public class ProductService {
         int total = all.size();
         int from = (int) pageable.getOffset();
         int to = Math.min(from + pageable.getPageSize(), total);
-        List<ProductSummaryResponse> content = (from >= total ? List.of() : all.subList(from, to))
+        List<ProductSummaryResponse> content = (from >= total ? Collections.<Product>emptyList() : all.subList(from, to))
                 .stream().map(productMapper::toSummary).toList();
         return new org.springframework.data.domain.PageImpl<>(content, pageable, total);
     }
