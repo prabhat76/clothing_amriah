@@ -73,7 +73,7 @@ public class ProductMapper {
                 p.getBrand() != null ? p.getBrand().getId() : null,
                 p.getBrand() != null ? p.getBrand().getName() : null,
                 minPrice,
-                p.getImageUrls() != null ? p.getImageUrls() : new java.util.HashSet<>()
+                p.getImageUrls() != null ? new java.util.HashSet<>(p.getImageUrls()) : new java.util.HashSet<>()
         );
     }
 
@@ -89,8 +89,8 @@ public class ProductMapper {
                 toSummary(p),
                 p.getDescription(),
                 p.getAiGeneratedDescription(),
-                p.getImageUrls(),
-                p.getTags(),
+                p.getImageUrls() != null ? new java.util.HashSet<>(p.getImageUrls()) : new java.util.HashSet<>(),
+                p.getTags() != null ? new java.util.HashSet<>(p.getTags()) : new java.util.HashSet<>(),
                 variants.stream().map(this::toVariantResponse).toList(),
                 sizes,
                 colors,
