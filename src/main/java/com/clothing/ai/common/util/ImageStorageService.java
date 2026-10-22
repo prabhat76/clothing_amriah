@@ -45,6 +45,9 @@ public class ImageStorageService {
     @Value("${CLOUDINARY_API_SECRET:}")
     private String apiSecret;
 
+    @Value("${app.upload.require-cloudinary:false}")
+    private boolean requireCloudinary;
+
     // ── Public API ────────────────────────────────────────────────────────────
 
     /**
@@ -60,6 +63,11 @@ public class ImageStorageService {
         }
         if (isCloudinaryConfigured()) {
             return uploadToCloudinary(file, folder);
+        }
+        if (requireCloudinary) {
+            throw new IllegalStateException(
+                    "Cloudinary is required but not configured. Set CLOUDINARY_CLOUD_NAME, "
+                            + "CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.");
         }
         return saveLocally(file, folder);
     }

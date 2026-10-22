@@ -479,6 +479,10 @@ Soft-archives (sets `active=false`, `status=ARCHIVED`).
 
 `multipart/form-data`
 
+In production, uploads are stored in Cloudinary. Configure `CLOUDINARY_CLOUD_NAME`,
+`CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in the backend deployment environment.
+If these are missing, the upload fails explicitly instead of returning a temporary local-disk URL.
+
 | Field | Type | Description |
 |-------|------|-------------|
 | `file` | File | Image (jpg/png/webp) |

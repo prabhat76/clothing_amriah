@@ -41,6 +41,8 @@ spring:
             enable: ${MAIL_STARTTLS:true}
 
 app:
+  upload:
+    require-cloudinary: ${REQUIRE_CLOUDINARY:true}
   payment:
     paypal:
       client-id: ${PAYPAL_CLIENT_ID:}
@@ -68,4 +70,3 @@ cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME:}
   api-key: ${CLOUDINARY_API_KEY:}
   api-secret: ${CLOUDINARY_API_SECRET:}
-
