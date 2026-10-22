@@ -1,6 +1,7 @@
 package com.clothing.ai.common.util;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import com.clothing.ai.config.AppProperties;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +80,6 @@ public class ImageStorageService {
 
     // ── Cloudinary ────────────────────────────────────────────────────────────
 
-    @SuppressWarnings("unchecked")
     private String uploadToCloudinary(MultipartFile file, String folder) throws IOException {
         Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
                 "cloud_name", cloudName,
@@ -94,16 +94,13 @@ public class ImageStorageService {
                 "unique_filename",  true,
                 "overwrite",        false,
                 "resource_type",    "image",
-                "quality",          "auto:good",
-                "fetch_format",     "auto",
-                "transformation",   java.util.List.of(
-                        ObjectUtils.asMap(
-                                "width",   2000,
-                                "height",  2000,
-                                "crop",    "limit",   // never upscale
-                                "quality", "auto:good"
-                        )
-                )
+                "transformation",   new Transformation()
+                        .width(2000)
+                        .height(2000)
+                        .crop("limit")
+                        .quality("auto:good")
+                        .fetchFormat("auto")
+                        .generate()
         );
 
         Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), params);
