@@ -91,7 +91,8 @@ public class ChatbotService {
                         p.getCategory() != null ? p.getCategory().getName() : null,
                         p.getBrand() != null ? p.getBrand().getId() : null,
                         p.getBrand() != null ? p.getBrand().getName() : null,
-                        p.getPrice()))   // minVariantPrice — fall back to base price; no variant repo here
+                        p.getPrice(),
+                        p.getImageUrls() != null ? p.getImageUrls() : new java.util.HashSet<>()))
                 .toList();
     }
 
