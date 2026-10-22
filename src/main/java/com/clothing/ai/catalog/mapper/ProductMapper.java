@@ -72,7 +72,8 @@ public class ProductMapper {
                 p.getCategory() != null ? p.getCategory().getName() : null,
                 p.getBrand() != null ? p.getBrand().getId() : null,
                 p.getBrand() != null ? p.getBrand().getName() : null,
-                minPrice
+                minPrice,
+                p.getImageUrls() != null ? p.getImageUrls() : new java.util.HashSet<>()
         );
     }
 

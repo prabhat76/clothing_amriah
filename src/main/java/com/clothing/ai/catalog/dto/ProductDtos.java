@@ -126,7 +126,7 @@ public class ProductDtos {
             String mainImageUrl, BigDecimal price, BigDecimal compareAtPrice,
             BigDecimal averageRating, int reviewCount, boolean featured, boolean newArrival,
             UUID categoryId, String categoryName, UUID brandId, String brandName,
-            BigDecimal minVariantPrice) {}
+            BigDecimal minVariantPrice, Set<String> imageUrls) {}
 
     @Schema(description = "Full product detail including variants, images, and tags")
     public record ProductDetailResponse(

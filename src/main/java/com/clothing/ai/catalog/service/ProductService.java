@@ -128,7 +128,14 @@ public class ProductService {
     @Transactional(readOnly = true)
     @Cacheable(value = "products", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
     public Page<ProductSummaryResponse> listProducts(Pageable pageable) {
-        return productRepository.findByActiveTrue(pageable).map(productMapper::toSummary);
+        // Use a fetch-join query to eagerly load imageUrls, then apply pagination in memory
+        List<Product> all = productRepository.findAllActiveWithImages();
+        int total = all.size();
+        int from = (int) pageable.getOffset();
+        int to = Math.min(from + pageable.getPageSize(), total);
+        List<ProductSummaryResponse> content = (from >= total ? List.of() : all.subList(from, to))
+                .stream().map(productMapper::toSummary).toList();
+        return new org.springframework.data.domain.PageImpl<>(content, pageable, total);
     }
 
     @Transactional(readOnly = true)
