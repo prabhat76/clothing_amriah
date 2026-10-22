@@ -44,7 +44,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
         SELECT DISTINCT p FROM Product p
         LEFT JOIN FETCH p.category
         LEFT JOIN FETCH p.brand
-        LEFT JOIN FETCH p.imageUrls
         WHERE p.active = true
         """)
     List<Product> findAllActiveWithImages();
