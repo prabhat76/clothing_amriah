@@ -277,6 +277,22 @@ public class ProductController {
                 productService.addVariant(id, req, SecurityUtils.currentUserId().toString()));
     }
 
+    // ------------------------------------------------------------------ standalone image upload
+
+    @Operation(summary = "Upload an image and get back a Cloudinary URL [ADMIN/STAFF]",
+            description = "Uploads a file, compresses it, and returns the CDN URL. Use this to fill image URL fields.")
+    @SecurityRequirement(name = "BearerAuth")
+    @PostMapping(value = "/images/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ApiResponse<String> uploadStandaloneImage(
+            @RequestPart("file") MultipartFile file) {
+        try {
+            return ApiResponse.success(imageStorageService.save(file, "products"));
+        } catch (Exception e) {
+            return ApiResponse.error("UPLOAD_FAILED", e.getMessage());
+        }
+    }
+
     // ------------------------------------------------------------------ image upload
 
     @Operation(

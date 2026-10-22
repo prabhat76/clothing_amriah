@@ -81,11 +81,21 @@ public class ImageStorageService {
         ));
 
         Map<String, Object> params = ObjectUtils.asMap(
-                "folder",         "astrimi/" + folder,
-                "use_filename",   true,
-                "unique_filename", true,
-                "overwrite",      false,
-                "resource_type",  "image"
+                "folder",           "astrimi/" + folder,
+                "use_filename",     true,
+                "unique_filename",  true,
+                "overwrite",        false,
+                "resource_type",    "image",
+                "quality",          "auto:good",
+                "fetch_format",     "auto",
+                "transformation",   java.util.List.of(
+                        ObjectUtils.asMap(
+                                "width",   2000,
+                                "height",  2000,
+                                "crop",    "limit",   // never upscale
+                                "quality", "auto:good"
+                        )
+                )
         );
 
         Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), params);
